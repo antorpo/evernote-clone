@@ -1,3 +1,10 @@
+/*
+  Para dar una experiencia mas real a la app 
+  el debounce nos va a permitir esperar un intervalo 
+  que sera cuando el usuario deje de tipear para 
+  mandar a actualizar el contenido en la BD.
+  Esto es lo que se conoce como guardado automatico.
+*/
 export default function debounce(a, b, c) {
   var d, e;
   return function () {

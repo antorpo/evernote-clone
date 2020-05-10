@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import SideBar from "./sidebar/SideBar";
+import Editor from "./editor/Editor";
+import './App.css';
 
 const firebase = require("firebase");
 
@@ -21,7 +24,6 @@ class App extends Component {
 
   */
   componentDidMount = () => {
-    debugger;
     firebase
       .firestore()
       .collection("notes")
@@ -40,9 +42,14 @@ class App extends Component {
   };
 
   render() {
+    const { selectedNoteIndex, notes } = this.state;
     return (
-      <div>
-        <h1>Hola estoy funcionando!</h1>
+      <div className="app-container">
+        <SideBar 
+         selectedNoteIndex={selectedNoteIndex}
+         notes={notes}
+         />
+        <Editor />
       </div>
     );
   }
