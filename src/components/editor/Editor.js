@@ -1,44 +1,50 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
-import BorderColorIcon from "@material-ui/icons/BorderColor";
 import { withStyles } from "@material-ui/core/styles";
 import debounce from "../../helpers";
 import styles from "./styles";
 
-class Editor extends Component {
-  constructor(props) {
-    super(props);
+const Editor = (props) => {
+  const [editor, setEditor] = useState({
+    id: "",
+    title: "",
+    body: "",
+  });
 
-    this.state = {
-      id: "",
-      title: "",
-      body: "",
-    };
-  }
+  // Para reemplazar componentDidMount/componentDidUpdate
+  useEffect(() => {
+    const { id, title, body } = props.selectedNote;
 
-  handleBodyChange = async (value) => {
-    await this.setState({
+    if (id !== editor.id) {
+      setEditor({
+        id,
+        title,
+        body,
+      });
+    }
+  });
+
+  const handleBodyChange = async (value) => {
+    await setEditor({
       body: value,
     });
 
-    this.update();
+    update();
   };
 
-  // Esperaremos 2 segundos de inactividad del usuario para actualizar la BD (auto-guardado).
-  update = debounce(() => {
+  // Esperaremos 5 segundos de inactividad del usuario para actualizar la BD (auto-guardado).
+  const update = debounce(() => {
     // Update Database
-    console.log("Updating")
-  }, 3000);
+    console.log("Updating");
+  }, 5000);
 
-  render() {
-    const { classes } = this.props;
+  const { classes } = props;
 
-    return (
-      <div className={classes.editorContainer}>
-        <ReactQuill value={this.state.body} onChange={this.handleBodyChange} />
-      </div>
-    );
-  }
-}
+  return (
+    <div className={classes.editorContainer}>
+      <ReactQuill value={editor.body} onChange={handleBodyChange} />
+    </div>
+  );
+};
 
 export default withStyles(styles)(Editor);

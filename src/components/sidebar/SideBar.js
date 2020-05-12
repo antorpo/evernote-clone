@@ -28,25 +28,61 @@ class SideBar extends Component {
     });
   };
 
+  newNote = () => {};
+
   render() {
-    const { notes, classes, selectedNoteIndex } = this.props;
-    const newNote = this.state.addingNote;
+    const { notes, classes, selectedNoteIndex, notesLoading, selectNote, deleteNote} = this.props;
+    const adding = this.state.addingNote;
+
+    if (notesLoading) {
+      return <div className={classes.sidebarContainer}>Loading...</div>;
+    }
 
     return (
       <div className={classes.sidebarContainer}>
         <Button onClick={this.handleNewNote} className={classes.newNoteBtn}>
-          {!newNote ? "New Note" : "Cancel"}
+          {!adding ? "New Note" : "Cancel"}
         </Button>
-        {newNote ? (
-          <div>
-            <input
-              type="text"
-              className={classes.newNoteInput}
-              placeholder="Enter note title"
-              onKeyUp={(e) => this.handleUpdateTitle(e.target.value)}
-            />
-          </div>
-        ) : null}
+
+        {!notes ? (
+          <div>Add note!</div>
+        ) : (
+          <React.Fragment>
+            {adding ? (
+              <div>
+                <input
+                  type="text"
+                  className={classes.newNoteInput}
+                  placeholder="Enter note title..."
+                  onKeyUp={(e) => this.handleUpdateTitle(e.target.value)}
+                />
+                <Button
+                  className={classes.newNoteSubmitBtn}
+                  onClick={this.newNote}
+                >
+                    Submit
+                </Button>
+              </div>
+            ) : null}
+
+            <List>
+              {notes.map((note, index) => {
+                return (
+                  <div key={index}>
+                    <SideBarItem
+                      note={note}
+                      index={index}
+                      selectedNoteIndex={selectedNoteIndex}
+                      selectNote={selectNote}
+                      deleteNote={deleteNote}
+                    />
+                    <Divider />
+                  </div>
+                );
+              })}
+            </List>
+          </React.Fragment>
+        )}
       </div>
     );
   }

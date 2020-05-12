@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import SideBar from "./sidebar/SideBar";
 import Editor from "./editor/Editor";
-import './App.css';
+import "./App.css";
 
 const firebase = require("firebase");
 
@@ -13,6 +13,7 @@ class App extends Component {
       selectedNoteIndex: null,
       selectedNote: null,
       notes: null,
+      notesLoading: false,
     };
   }
 
@@ -24,6 +25,10 @@ class App extends Component {
 
   */
   componentDidMount = () => {
+    this.setState({
+      notesLoading: true,
+    });
+
     firebase
       .firestore()
       .collection("notes")
@@ -37,19 +42,40 @@ class App extends Component {
 
         this.setState({
           notes,
+          notesLoading: false,
         });
       });
   };
 
+  selectNote = (note, index) => {
+    this.setState({ selectedNote: note, selectedNoteIndex: index });
+    console.log(this.state);
+  };
+
+  deleteNote = (note) => {
+    if (window.confirm(`Are you sure to delete ${note.title}?`)) {
+      // Delete query.
+    }
+  };
+
   render() {
-    const { selectedNoteIndex, notes } = this.state;
+    const { selectedNote, selectedNoteIndex, notes, notesLoading } = this.state;
     return (
       <div className="app-container">
-        <SideBar 
-         selectedNoteIndex={selectedNoteIndex}
-         notes={notes}
-         />
-        <Editor />
+        <SideBar
+          selectedNoteIndex={selectedNoteIndex}
+          notes={notes}
+          notesLoading={notesLoading}
+          deleteNote={this.deleteNote}
+          selectNote={this.selectNote}
+          newNote={this.newNote}
+        />
+        {selectedNote ? (
+          <Editor
+            selectedNote={selectedNote}
+            selectedNoteIndex={selectedNoteIndex}
+          />
+        ) : null}
       </div>
     );
   }
