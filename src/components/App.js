@@ -52,14 +52,76 @@ class App extends Component {
     console.log(this.state);
   };
 
-  deleteNote = (note) => {
+  deleteNote = async (note) => {
+    const { notes, selectedNoteIndex } = this.state;
+
     if (window.confirm(`Are you sure to delete ${note.title}?`)) {
-      // Delete query.
+      const noteIndex = notes.indexOf(note);
+
+      await this.setState({
+        notes: notes.filter((_note) => _note !== note),
+      });
+
+      if (selectedNoteIndex === noteIndex) {
+        this.setState({
+          selectedNoteIndex: null,
+          selectNote: null,
+        });
+      } else {
+        notes.length > 1 ? this.selectNote(notes[selectedNoteIndex - 1], selectedNoteIndex-1) :
+        this.setState({
+          selectedNoteIndex: null,
+          selectNote: null,
+        });
+      }
+
+      await firebase.firestore().collection("notes").doc(note.id).delete();
     }
+  };
+
+  //  timestamp: Campo de trazabilidad para saber la ultima edicion.
+  noteUpdate = (id, noteObj) => {
+    firebase.firestore().collection("notes").doc(id).update({
+      title: noteObj.title,
+      body: noteObj.body,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  };
+
+  newNote = async (title) => {
+    const note = {
+      title: title,
+      body: "",
+    };
+
+    const newFromDB = await firebase.firestore().collection("notes").add({
+      title: note.title,
+      body: note.body,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const newId = newFromDB.id;
+
+    await this.setState({
+      notes: [...this.state.notes, note],
+    });
+
+    const newIndex = this.state.notes.indexOf(
+      this.state.notes.filter((_note) => _note.id === newId)[0]
+    );
+    this.setState({
+      selectedNote: this.state.notes[newIndex],
+      selectedNoteIndex: newIndex,
+    });
   };
 
   render() {
     const { selectedNote, selectedNoteIndex, notes, notesLoading } = this.state;
+
+    if (notesLoading) {
+      return <div>Loading...</div>;
+    }
+
     return (
       <div className="app-container">
         <SideBar
@@ -74,6 +136,8 @@ class App extends Component {
           <Editor
             selectedNote={selectedNote}
             selectedNoteIndex={selectedNoteIndex}
+            notes={notes}
+            noteUpdate={this.noteUpdate}
           />
         ) : null}
       </div>

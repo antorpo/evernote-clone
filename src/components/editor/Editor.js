@@ -1,57 +1,74 @@
-import React, { useEffect, useState } from "react";
+import React, { Component } from "react";
+import BorderColorIcon from "@material-ui/icons/BorderColor";
 import ReactQuill from "react-quill";
 import { withStyles } from "@material-ui/core/styles";
 import debounce from "../../helpers";
 import styles from "./styles";
 
-const Editor = (props) => {
-  const [editor, setEditor] = useState({
-    id: "",
-    title: "",
-    body: "",
-  });
+class Editor extends Component {
+  constructor() {
+    super();
+    this.state = {
+      body: "",
+      title: "",
+      id: "",
+    };
+  }
 
-  /* Para reemplazar componentDidMount/componentDidUpdate
-     El efecto se llevará a cabo en cada actualizacion, recibiendo como
-     parametros: useEffect(_callback_, _dependency_)
-     El Callback sera la funcion a ejecutar y las dependencias nos permitira 
-     disminuir el uso de recursos ya que solo se usara el efecto si detecta
-     cambios en las dependencias.
-  */
-  useEffect(() => {
-    const { id, title, body } = props.selectedNote;
-
-    if (id !== editor.id) {
-      setEditor({
-        id,
-        title,
-        body,
-      });
-    }
-  }, [editor.id, editor.title, editor.body, props.selectedNote]);
-
-  const handleBodyChange = async (value) => {
-    // await setEditor({
-    //   body: value,
-    // });
-
-    update();
-    console.log("changing!");
+  componentDidMount = () => {
+    this.setState({
+      body: this.props.selectedNote.body,
+      title: this.props.selectedNote.title,
+      id: this.props.selectedNote.id,
+    });
   };
 
-  // Esperaremos 5 segundos de inactividad del usuario para actualizar la BD (auto-guardado).
-  const update = debounce(() => {
-    // Update Database
-    console.log("Updating");
+  componentDidUpdate = () => {
+    if (this.props.selectedNote.id !== this.state.id) {
+      this.setState({
+        body: this.props.selectedNote.body,
+        title: this.props.selectedNote.title,
+        id: this.props.selectedNote.id,
+      });
+    }
+  };
+
+  render() {
+    const { classes } = this.props;
+
+    return (
+      <div className={classes.editorContainer}>
+        <BorderColorIcon className={classes.editIcon}></BorderColorIcon>
+        <input
+          className={classes.titleInput}
+          placeholder="Note title..."
+          value={this.state.title ? this.state.title : ""}
+          onChange={(e) => this.updateTitle(e.target.value)}
+        ></input>
+        <ReactQuill
+          value={this.state.body}
+          onChange={this.updateBody}
+        ></ReactQuill>
+      </div>
+    );
+  }
+
+  updateBody = async (val) => {
+    await this.setState({ body: val });
+    this.update();
+  };
+
+  updateTitle = async (txt) => {
+    await this.setState({ title: txt });
+    this.update();
+  };
+
+  update = debounce(() => {
+    this.props.noteUpdate(this.state.id, {
+      title: this.state.title,
+      body: this.state.body,
+    });
   }, 5000);
-
-  const { classes } = props;
-
-  return (
-    <div className={classes.editorContainer}>
-      <ReactQuill onChange={handleBodyChange} />
-    </div>
-  );
-};
+}
 
 export default withStyles(styles)(Editor);

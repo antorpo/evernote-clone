@@ -28,7 +28,10 @@ class SideBar extends Component {
     });
   };
 
-  newNote = () => {};
+  newNote = () => {
+    this.props.newNote(this.state.title);
+    this.setState({title: null, addingNote: false});
+  };
 
   render() {
     const { notes, classes, selectedNoteIndex, notesLoading, selectNote, deleteNote} = this.props;
