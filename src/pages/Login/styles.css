@@ -1,0 +1,30 @@
+.Login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: '#468f5b';
+}
+
+.Login__form {
+  background-color: white;
+  padding: 40px 70px;
+  border-radius: 10px;
+  width: 35%;
+}
+
+.logo__img {
+  width: 100%;
+}
+
+.Login__form-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.button__group {
+  margin-top: 20px;
+}
