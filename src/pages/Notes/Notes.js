@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import SideBar from "../../components/sidebar/SideBar";
 import Editor from "../../components/editor/Editor";
+import { NavBar } from "../../components/navbar/NavBar";
 import { firebase } from "../../config/firebase";
+import { connect } from "react-redux";
+import { signOutUser } from "../../store/slices/userSlice";
+import { signOutEmailAndPassword } from "../../services/firebase.services";
+import { withRouter } from "react-router-dom";
+import { Helmet } from "react-helmet";
 
 class Notes extends Component {
   constructor(props) {
@@ -30,6 +36,7 @@ class Notes extends Component {
     firebase
       .firestore()
       .collection("notes")
+      .where("user_id", "==", this.props.id)
       .onSnapshot((serverUpdate) => {
         const notes = serverUpdate.docs.map((doc) => {
           const data = doc.data();
@@ -43,6 +50,12 @@ class Notes extends Component {
           notesLoading: false,
         });
       });
+  };
+
+  signOut = async () => {
+    await signOutEmailAndPassword();
+    this.props.signOutUser();
+    this.props.history.push("/login");
   };
 
   selectNote = (note, index) => {
@@ -84,6 +97,7 @@ class Notes extends Component {
       title: noteObj.title,
       body: noteObj.body,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      user_id: this.props.id,
     });
   };
 
@@ -91,12 +105,14 @@ class Notes extends Component {
     const note = {
       title: title,
       body: "",
+      user_id: this.props.id,
     };
 
     const newFromDB = await firebase.firestore().collection("notes").add({
       title: note.title,
       body: note.body,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      user_id: note.user_id,
     });
 
     const newId = newFromDB.id;
@@ -123,6 +139,10 @@ class Notes extends Component {
 
     return (
       <div className="app-container">
+        <Helmet>
+        <title>{`Notas de ${this.props.email}`}</title>
+      </Helmet>
+        <NavBar email={this.props.email} logout={this.signOut} />
         <SideBar
           selectedNoteIndex={selectedNoteIndex}
           notes={notes}
@@ -144,4 +164,13 @@ class Notes extends Component {
   }
 }
 
-export default Notes;
+const mapDispatchToProps = (dispatch) => ({
+  signOutUser,
+});
+
+const mapStateToProps = (state) => ({
+  email: state.user.email,
+  id: state.user.id,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Notes));
